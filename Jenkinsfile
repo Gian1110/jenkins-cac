@@ -5,7 +5,7 @@ pipeline {
     
     //server values
         string(name: 'remoteHost', defaultValue: '192.168.100.173', description: 'dns o ip del host')
-        string(name: 'release_version', defaultValue: 'release/v1.0.0', description: 'version de la applicacion')
+        string(name: 'imagenVersion', defaultValue: '1.0.0', description: 'version de la applicacion')
         
     }
     environment {
@@ -20,17 +20,10 @@ pipeline {
         stage('Checkout on release') {
             steps {
                 script {
-
-                    def releaseBranch = params.release_version
-                    checkout([$class: 'GitSCM', 
-                              branches: [[name: releaseBranch]], 
-                              doGenerateSubmoduleConfigurations: false, 
-                              extensions: [], 
-                              userRemoteConfigs: [[
-                                  url: scm.getUserRemoteConfigs()[0].getUrl()
-                              ]]
-                    ])
-                    env.version_imagen = releaseBranch.split('v')[1]
+                    
+                    def parameterMap = [:]
+                    parameterMap["imagenVersion"] = params.imagenVersion
+                    dockerb.checkoutBranch(parameterMap);
 
                 }
             }
@@ -42,7 +35,7 @@ pipeline {
                         def parameterMap = [:]
                         parameterMap["path"] = path_proyect
                         parameterMap["containerName"] = name_container
-                        parameterMap["imagenVersion"] = version_imagen
+                        parameterMap["imagenVersion"] = params.imagenVersion
                         dockerb.dockerBuildPush(parameterMap);
                 }                                     
             }
@@ -53,7 +46,7 @@ pipeline {
                         def parameterMap = [:]
                         parameterMap["remoteHost"] = params.remoteHost
                         parameterMap["containerName"] = name_container
-                        parameterMap["imagenVersion"] = version_imagen
+                        parameterMap["imagenVersion"] = params.imagenVersion
                         dockerb.dockerPull(parameterMap);
                             
                     }
@@ -69,7 +62,7 @@ pipeline {
                     def parameterMap = [:]
                     parameterMap["remoteHost"] = params.remoteHost
                     parameterMap["containerName"] = name_container
-                    parameterMap["imagenVersion"] = version_imagen
+                    parameterMap["imagenVersion"] = params.imagenVersion
                     parameterMap["containerPuert"] = puerto_imagen
                     dockerb.dockerRmRun(parameterMap);
                     
