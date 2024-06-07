@@ -16,8 +16,24 @@ pipeline {
           
     }
     stages {
+        stage('existe version actual') {
+            steps {
+                script {
+                    def parameterMap = [:]
+                        parameterMap["remoteHost"] = params.remoteHost
+                        parameterMap["containerName"] = name_container
+                        parameterMap["imagenVersion"] = params.imagenVersion
+                    env.equalsVersion = dockerb.dockerVersionContainer(parameterMap);
+                }
+            }
+        }
 
         stage('Checkout on release') {
+            when {
+                expression {
+                    return env.equalsVersion == "false";
+                }
+            }
             steps {
                 script {
                     
@@ -30,6 +46,11 @@ pipeline {
         }
 
         stage('docker build and push') {
+            when {
+                expression {
+                    return env.equalsVersion == "false";
+                }
+            }
             steps {
                 script{
                         def parameterMap = [:]
@@ -40,7 +61,13 @@ pipeline {
                 }                                     
             }
         }
+
         stage('ssh pull') {
+            when {
+                expression {
+                    return env.equalsVersion == "false";
+                }
+            }
             steps {
                 script{
                         def parameterMap = [:]
@@ -56,6 +83,11 @@ pipeline {
         }
 
         stage('ssh rm and run') {
+            when {
+                expression {
+                    return env.equalsVersion == "false";
+                }
+            }
             steps {
                 script{
 
