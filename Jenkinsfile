@@ -23,7 +23,7 @@ pipeline {
                     
                     def parameterMap = [:]
                     parameterMap["imagenVersion"] = params.imagenVersion
-                    dockerb.checkoutBranch(parameterMap);
+                    gitJob.checkoutBranch(parameterMap);
 
                 }
             }
